@@ -1781,3 +1781,6 @@ async def get_portfolio_analytics(request: Request):
     except Exception as e:
         logger.error(f"Failed to calculate portfolio analytics: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to load analytics: {str(e)}")
+
+# Force rebuild trigger for Render deployment
+
