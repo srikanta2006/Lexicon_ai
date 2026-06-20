@@ -156,7 +156,6 @@ class PaymentVerifyRequest(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
-
 class AppointmentResponse(BaseModel):
     id: int
     client_id: str
@@ -177,7 +176,6 @@ class AppointmentResponse(BaseModel):
     razorpay_order_id: Optional[str] = None
     razorpay_payment_id: Optional[str] = None
     consultation_fee: Optional[float] = 500.00
-
 
 
 # --- Direct Messaging Models ---
@@ -203,7 +201,6 @@ class ContactResponse(BaseModel):
     email: str
     role: str
     specialty: Optional[str] = None
-
 
 # --- Deal Bundle Models ---
 
@@ -288,5 +285,3 @@ class PortfolioAnalyticsResponse(BaseModel):
     risk_category_radar: dict
     trends: List[AnalyticsTrendPoint]
     counterparty_rankings: List[CounterpartyRiskItem]
-
-

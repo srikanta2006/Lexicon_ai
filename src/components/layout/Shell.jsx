@@ -61,7 +61,6 @@ export default function Shell({ children }) {
       localStorage.setItem("theme", "light");
     }
   }, [darkMode]);
-
   // Floating chatbot states
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -76,6 +75,7 @@ export default function Shell({ children }) {
   const [speakingMsgIdx, setSpeakingMsgIdx] = useState(null);
   const voiceLang = lang === "en" ? "en-US" : lang === "te" ? "te-IN" : "hi-IN";
   const recognitionRef = useRef(null);
+  const startInputRef = useRef("");
 
   // Initialize Speech Recognition for floating chatbot
   useEffect(() => {
@@ -95,9 +95,13 @@ export default function Shell({ children }) {
       };
 
       rec.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        if (transcript) {
-          setInput(prev => prev + (prev ? " " : "") + transcript);
+        let speechTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          speechTranscript += event.results[i][0].transcript;
+        }
+        if (speechTranscript) {
+          const base = startInputRef.current || "";
+          setInput(base + (base ? " " : "") + speechTranscript.trim());
         }
       };
 
@@ -133,6 +137,7 @@ export default function Shell({ children }) {
       recognitionRef.current.stop();
     } else {
       try {
+        startInputRef.current = input;
         recognitionRef.current.start();
       } catch (err) {
         console.error("Failed to start SpeechRecognition:", err);
@@ -321,7 +326,6 @@ export default function Shell({ children }) {
               <Moon className="w-4.5 h-4.5 text-slate-500 hover:-rotate-12 transition-transform duration-300" />
             )}
           </button>
-
           {/* Global Language Selector Dropdown */}
           <select
             value={lang}
@@ -556,9 +560,6 @@ export default function Shell({ children }) {
                     <Columns className="w-4 h-4 text-blue-600" />
                     <span>{t("split", "nav")}</span>
                   </Link>
-
-
-
                   <Link
                     to="/negotiate"
                     className={`flex items-center gap-2.5 px-3 py-2 rounded text-[13px] font-medium transition-colors ${

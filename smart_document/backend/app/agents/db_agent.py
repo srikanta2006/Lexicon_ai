@@ -364,7 +364,6 @@ class DBAgent:
         results = list(combined.values())
         results.sort(key=lambda x: x.get("created_at") or "", reverse=True)
         return results
-
     async def get_lawyers(self) -> list:
         """Fetches all registered lawyers from public.lawyers."""
         supabase_client = self.client
@@ -755,7 +754,7 @@ class DBAgent:
             if os.path.exists(local_deals_path):
                 try:
                     with open(local_deals_path, "r", encoding="utf-8") as f:
-                        deals = json.load(f)
+                         deals = json.load(f)
                 except Exception:
                     pass
             new_deal = {

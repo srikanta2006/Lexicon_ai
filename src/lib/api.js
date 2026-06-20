@@ -268,7 +268,6 @@ export async function verifyPayment(paymentDetails) {
   const response = await api.post('/payments/verify', paymentDetails);
   return response.data;
 }
-
 export async function shareAnalysisByEmail(documentId, recipientEmail) {
   const response = await api.post(`/share-email/${documentId}`, { recipient_email: recipientEmail });
   return response.data;
@@ -366,5 +365,4 @@ export async function getPortfolioAnalytics() {
   const response = await api.get('/analytics/portfolio');
   return response.data;
 }
-
 export default api;

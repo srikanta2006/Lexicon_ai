@@ -243,7 +243,6 @@ export default function AppointmentsPage() {
       setPayingId(null);
     }
   };
-
   // Group appointments into upcoming and past
   const now = new Date();
   const getApptDateTime = (appt) => new Date(`${appt.appointment_date}T${appt.appointment_time}`);
@@ -722,7 +721,6 @@ export default function AppointmentsPage() {
                             {isAccepted && (
                               <>
 
-                                
                                 <a 
                                   href={appt.meeting_link || `https://meet.jit.si/lexicon-meeting-${appt.id}`}
                                   target="_blank"
@@ -769,7 +767,7 @@ export default function AppointmentsPage() {
                             {isScheduled && userRole === "client" && (
                               <>
                                 <span className="text-[10px] text-amber-600 font-medium italic">Awaiting counsel's acceptance</span>
-                                
+
                                 <button
                                   onClick={() => handleStatusUpdate(appt.id, "cancelled")}
                                   className="flex items-center gap-1 px-2.5 py-1.5 border border-border text-text-secondary hover:text-risk-red hover:bg-risk-red-light/20 rounded text-[11px] font-semibold transition-colors"
@@ -838,7 +836,6 @@ export default function AppointmentsPage() {
                                   </p>
                                 )}
                               </div>
-
                               {/* Payment Button for completed unpaid consultations */}
                               {isCompleted && userRole === "client" && appt.payment_status !== "paid" && (
                                 <div className="shrink-0 self-start md:self-center">

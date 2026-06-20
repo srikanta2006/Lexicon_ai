@@ -51,8 +51,8 @@ from app.models.schemas import (
 async def lifespan(app: FastAPI):
     """Runs on application startup and shutdown."""
     logger.info("🚀  Lexicon AI Backend v2.1.0 starting up...")
-    logger.info(f"   LLM Model  : {settings.OPENAI_MODEL}")
-    logger.info(f"   Base URL   : {settings.OPENAI_BASE_URL or 'default (OpenAI)'}")
+    logger.info(f"   LLM Model  : {settings.GROQ_MODEL}")
+    logger.info(f"   Base URL   : {settings.GROQ_BASE_URL or 'default (Groq)'}")
     logger.info(f"   Supabase   : {'configured' if settings.SUPABASE_URL else 'disabled (local storage mode)'}")
     yield
     logger.info("Lexicon AI Backend shutting down.")
@@ -180,7 +180,7 @@ def read_root():
 @app.get("/health", tags=["System"])
 def health():
     """Health check endpoint to monitor API status."""
-    return {"status": "healthy", "model": settings.OPENAI_MODEL}
+    return {"status": "healthy", "model": settings.GROQ_MODEL}
 
 
 # ---------------------------------------------------------------------------
@@ -1411,8 +1411,6 @@ async def send_direct_message(contact_id: str, req: DirectMessageCreate, request
     except Exception as e:
         logger.error(f"Failed to send direct message: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send message: {str(e)}")
-
-
 # ---------------------------------------------------------------------------
 # Advanced Contract Intelligence Endpoints
 # ---------------------------------------------------------------------------

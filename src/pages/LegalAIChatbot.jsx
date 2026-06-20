@@ -36,6 +36,7 @@ export default function LegalAIChatbot() {
   const [speakingMsgId, setSpeakingMsgId] = useState(null);
   const [voiceLang, setVoiceLang] = useState("en-US");
   const recognitionRef = useRef(null);
+  const startInputRef = useRef("");
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -55,9 +56,13 @@ export default function LegalAIChatbot() {
       };
 
       rec.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        if (transcript) {
-          setInputVal(prev => prev + (prev ? " " : "") + transcript);
+        let speechTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          speechTranscript += event.results[i][0].transcript;
+        }
+        if (speechTranscript) {
+          const base = startInputRef.current || "";
+          setInputVal(base + (base ? " " : "") + speechTranscript.trim());
         }
       };
 
@@ -93,6 +98,7 @@ export default function LegalAIChatbot() {
       recognitionRef.current.stop();
     } else {
       try {
+        startInputRef.current = inputVal;
         recognitionRef.current.start();
       } catch (err) {
         console.error("Failed to start SpeechRecognition:", err);
