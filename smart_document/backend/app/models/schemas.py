@@ -11,6 +11,8 @@ class LLMRisk(BaseModel):
     title: str = Field(description="Name or category of the risk.")
     description: str = Field(description="Detailed explanation of the risk.")
     severity: str = Field(description="Severity level of the risk (High, Medium, Low).")
+    mitigation: Optional[str] = Field(default="", description="Suggested change or mitigation strategy for this risk.")
+    impact: Optional[str] = Field(default="", description="Potential business or legal consequence of this risk.")
 
 class LLMClause(BaseModel):
     title: str = Field(description="Title of the clause.")
@@ -22,6 +24,9 @@ class LLMMetadata(BaseModel):
     parties: List[str] = Field(default_factory=list, description="Parties involved in the contract.")
     effective_date: str = Field(description="Effective date of the document.")
     document_text: Optional[str] = Field(default=None, description="The full extracted text of the document.")
+    group_id: Optional[str] = Field(default=None, description="Linked document group ID.")
+    linked_docs: Optional[List[dict]] = Field(default_factory=list, description="Other documents in the linked group.")
+    cross_contradictions: Optional[dict] = Field(default=None, description="Batch cross-document contradictions report.")
 
 # --- Inconsistency Detection Models ---
 
@@ -54,6 +59,8 @@ class FinalRisk(BaseModel):
     severity: str
     severity_weight: int  # High -> 3, Medium -> 2, Low -> 1
     is_critical: bool     # True if severity is High (weight == 3)
+    mitigation: Optional[str] = ""
+    impact: Optional[str] = ""
 
 class FinalClauses(BaseModel):
     standard_clauses: List[LLMClause]
@@ -81,13 +88,14 @@ class AnalyzeTextRequest(BaseModel):
 
 class NoteCreate(BaseModel):
     content: str
+    document_id: Optional[str] = None
 
 class NoteUpdate(BaseModel):
     content: str
 
 class NoteResponse(BaseModel):
     id: int
-    document_id: str
+    document_id: Optional[str] = None
     user_id: str
     content: str
     created_at: Optional[str] = None
@@ -115,4 +123,170 @@ class MessageResponse(BaseModel):
 
 class ShareRequest(BaseModel):
     client_email: str
+
+
+# --- Lawyer Models ---
+
+class LawyerResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    specialty: str
+    phone: Optional[str] = None
+    available_slots: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+# --- Appointment Models ---
+
+class AppointmentCreate(BaseModel):
+    lawyer_id: Optional[str] = None  # None = auto-assign to any available lawyer
+    client_id: Optional[str] = None
+    title: str
+    description: Optional[str] = ""
+    appointment_date: str  # YYYY-MM-DD
+    appointment_time: str  # HH:MM
+    share_phone_with_lawyer: Optional[bool] = False
+
+class AppointmentUpdate(BaseModel):
+    status: str
+
+class PaymentVerifyRequest(BaseModel):
+    appointment_id: int
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
+class AppointmentResponse(BaseModel):
+    id: int
+    client_id: str
+    lawyer_id: str
+    title: str
+    description: Optional[str] = ""
+    appointment_date: str
+    appointment_time: str
+    status: str
+    meeting_link: Optional[str] = None
+    share_phone_with_lawyer: Optional[bool] = False
+    client_phone: Optional[str] = None
+    lawyer_phone: Optional[str] = None
+    created_at: Optional[str] = None
+    client_name: Optional[str] = None
+    lawyer_name: Optional[str] = None
+    payment_status: Optional[str] = "unpaid"
+    razorpay_order_id: Optional[str] = None
+    razorpay_payment_id: Optional[str] = None
+    consultation_fee: Optional[float] = 500.00
+
+
+
+# --- Direct Messaging Models ---
+
+class DirectMessageCreate(BaseModel):
+    content: str
+
+class DirectMessageResponse(BaseModel):
+    id: int
+    sender_id: str
+    receiver_id: str
+    sender_name: str
+    sender_role: str
+    content: str
+    created_at: Optional[str] = None
+
+
+# --- Contact Models ---
+
+class ContactResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    specialty: Optional[str] = None
+
+
+# --- Deal Bundle Models ---
+
+class DealCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    document_ids: List[str] = Field(default_factory=list)
+
+class DealResponse(BaseModel):
+    id: str
+    user_id: str
+    name: str
+    description: Optional[str] = ""
+    document_ids: List[str]
+    inconsistency_report: Optional[dict] = None
+    created_at: Optional[str] = None
+
+
+# --- Semantic Diff Models ---
+
+class SemanticDiffBlock(BaseModel):
+    title: str
+    type: str # "added" | "removed" | "modified" | "unchanged"
+    doc_a_text: Optional[str] = ""
+    doc_b_text: Optional[str] = ""
+    change_explanation: Optional[str] = ""
+    risk_impact: str # "escalation" | "mitigation" | "neutral"
+    severity: str # "High" | "Medium" | "Low" | "None"
+
+class SemanticDiffResponse(BaseModel):
+    overall_change_summary: str
+    risk_impact_summary: str
+    diff_blocks: List[SemanticDiffBlock]
+
+
+# --- AI Negotiation Models ---
+
+class NegotiateStartRequest(BaseModel):
+    document_id: str
+    clause_title: str
+    clause_text: str
+    counterparty_name: str
+    personality_profile: str
+
+class NegotiateChatRequest(BaseModel):
+    document_id: str
+    clause_title: str
+    clause_text: str
+    counterparty_name: str
+    personality_profile: str
+    history: List[dict]
+    user_message: str
+
+class NegotiateChatResponse(BaseModel):
+    reply: str
+    agreement_percentage: int
+    counter_proposal: Optional[str] = None
+    points_of_contention: List[str]
+
+
+# --- Portfolio Analytics Models ---
+
+class RiskSeverityDistribution(BaseModel):
+    high: int
+    medium: int
+    low: int
+
+class AnalyticsTrendPoint(BaseModel):
+    month: str
+    count: int
+    avg_risk: float
+
+class CounterpartyRiskItem(BaseModel):
+    name: str
+    contract_count: int
+    avg_risk: float
+
+class PortfolioAnalyticsResponse(BaseModel):
+    total_contracts: int
+    avg_portfolio_risk: float
+    risk_distribution: RiskSeverityDistribution
+    risk_category_radar: dict
+    trends: List[AnalyticsTrendPoint]
+    counterparty_rankings: List[CounterpartyRiskItem]
+
 

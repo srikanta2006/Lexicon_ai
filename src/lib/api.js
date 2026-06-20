@@ -19,6 +19,7 @@ api.interceptors.request.use(async (config) => {
       config.headers['Authorization'] = `Bearer ${session.access_token}`;
       config.headers['X-User-Id'] = session.user.id;
       config.headers['X-User-Role'] = session.user.user_metadata?.role || 'lawyer';
+      config.headers['X-User-Name'] = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
     }
   } catch (err) {
     console.error("Auth token extraction failed", err);
@@ -226,6 +227,143 @@ export async function downloadReport(documentId) {
 
 export async function healthCheck() {
   const response = await api.get('/health');
+  return response.data;
+}
+
+// ─── Auth / Profile Completion ──────────────────────────────────────────────
+
+export async function completeProfile(name, role) {
+  const response = await api.post('/auth/complete-profile', { name, role });
+  return response.data;
+}
+
+// ─── Lawyers & Appointments ──────────────────────────────────────────────────
+
+export async function getLawyers() {
+  const response = await api.get('/lawyers');
+  return response.data;
+}
+
+export async function getAppointments() {
+  const response = await api.get('/appointments');
+  return response.data;
+}
+
+export async function createAppointment(appointmentData) {
+  const response = await api.post('/appointments', appointmentData);
+  return response.data;
+}
+
+export async function updateAppointment(appointmentId, status) {
+  const response = await api.put(`/appointments/${appointmentId}`, { status });
+  return response.data;
+}
+
+export async function createPaymentOrder(appointmentId) {
+  const response = await api.post(`/payments/create-order/${appointmentId}`);
+  return response.data;
+}
+
+export async function verifyPayment(paymentDetails) {
+  const response = await api.post('/payments/verify', paymentDetails);
+  return response.data;
+}
+
+export async function shareAnalysisByEmail(documentId, recipientEmail) {
+  const response = await api.post(`/share-email/${documentId}`, { recipient_email: recipientEmail });
+  return response.data;
+}
+
+// ─── Contacts & Direct Messaging ────────────────────────────────────────────
+
+/**
+ * Get contacts for the current user based on appointment relationships.
+ * @returns {Promise<Object[]>} Array of contact objects.
+ */
+export async function getContacts() {
+  const response = await api.get('/contacts');
+  return response.data;
+}
+
+/**
+ * Get direct messages between the current user and a contact.
+ * @param {string} contactId - The contact's user ID.
+ * @returns {Promise<Object[]>} Array of message objects.
+ */
+export async function getDirectMessages(contactId) {
+  const response = await api.get(`/direct-messages/${contactId}`);
+  return response.data;
+}
+
+/**
+ * Send a direct message to a contact.
+ * @param {string} contactId - The recipient's user ID.
+ * @param {string} content - The message content.
+ * @returns {Promise<Object>} The created message.
+ */
+export async function sendDirectMessage(contactId, content) {
+  const response = await api.post(`/direct-messages/${contactId}`, { content });
+  return response.data;
+}
+
+// ─── Predefined Slots & Profile Phone updates ───────────────────────────────
+
+export async function createGeneralNote(content, documentId = null) {
+  const response = await api.post('/notes', { content, document_id: documentId });
+  return response.data;
+}
+
+export async function updateLawyerSlots(slots) {
+  const response = await api.put('/lawyers/slots', { slots });
+  return response.data;
+}
+
+export async function updateProfilePhone(phone) {
+  const response = await api.put('/auth/profile-phone', { phone });
+  return response.data;
+}
+
+// ─── Advanced Contract Intelligence Features ─────────────────────────────────
+
+export async function compareDiff(documentIds) {
+  const response = await api.post('/compare/diff', {
+    document_ids: documentIds,
+  });
+  return response.data;
+}
+
+export async function createDealBundle(dealData) {
+  const response = await api.post('/deals', dealData);
+  return response.data;
+}
+
+export async function listDealBundles() {
+  const response = await api.get('/deals');
+  return response.data;
+}
+
+export async function getDealBundle(dealId) {
+  const response = await api.get(`/deals/${dealId}`);
+  return response.data;
+}
+
+export async function deleteDealBundle(dealId) {
+  const response = await api.delete(`/deals/${dealId}`);
+  return response.data;
+}
+
+export async function analyzeDealBundle(dealId) {
+  const response = await api.post(`/deals/${dealId}/analyze`);
+  return response.data;
+}
+
+export async function negotiateChat(negotiateData) {
+  const response = await api.post('/negotiate/chat', negotiateData);
+  return response.data;
+}
+
+export async function getPortfolioAnalytics() {
+  const response = await api.get('/analytics/portfolio');
   return response.data;
 }
 
